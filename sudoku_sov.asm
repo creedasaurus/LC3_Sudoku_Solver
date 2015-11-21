@@ -11,6 +11,7 @@
 	.ORIG x3000
 
 
+
 Main	LEA R0, name	; Outputs Names & Newline
 	PUTS		; 
 	LEA R0, newLine	;
@@ -23,11 +24,22 @@ Main	LEA R0, name	; Outputs Names & Newline
 
 	LEA R0, prompt	; Outputs Prompt
 	PUTS		;
+
+
+
+	AND	R5, R5, #0	; R5 is counter
+	ADD	R5, R5, #4	; LOOP 4 times
+	LEA	R2, array
+
+LOOP	GETC			; Test Loop for adding input values into an array
+	PUTC			;
+	STR 	R0, R2, #0	; Stores val of R0 into the loaded array R2[] 
+	ADD	R2, R2, #1	; increments address of array
+	ADD 	R5, R5, #-1	; decrements count
+	BRp	LOOP		;
+	BRnz	EndMain
 	
-LOOP	LDI R0, OS_KBSR ;
-	BRzp	LOOP	
-	LDI R0, OS_KBDR	;
-	PUTS		;
+	
 	
 
 EndMain	Halt
@@ -46,6 +58,11 @@ prompt	.STRINGZ "Please input a character: "
 
 OS_KBSR	.FILL	xFE00
 OS_KBDR	.FILL	xFE02
+OS_DSR	.FILL	xFE04
+OS_DDR	.FILL	xFE06
+
+array	.BLKW	5 #3  ; Test array - has value 3 in each location just as placeholder
+
 
 
 	.END
