@@ -15,7 +15,7 @@ MAIN
 	LD	R6, STACK 	; Load up stack pointer
 	LD 	R5, BOARD 	; Load up board array pointer
 	JSR	PROMPT 		; Call subroutine for the first prompt and info
-	JSR	GetAndStore	; Call to subroutine that will get numbers from input and store them
+	;JSR	GetAndStore	; Call to subroutine that will get numbers from input and store them
 
 EndMain	Halt
 
@@ -83,7 +83,7 @@ GetAndStore
 	ADD	R6, R6, #-1	; Decrement Stack
 
 	AND	R5, R5, #0	; R5 is counter
-	ADD	R5, R5, #4	; LOOP 4 times
+	ADD	R5, R5, #4	; LOOP 16 times
 	LEA	R2, BOARD
 
 
@@ -106,18 +106,29 @@ LOOP 	GETC				; Test Loop for adding input values into an array
 ; using whatever is stored in BOARD
 ;------------------------------
 
-DISPLAY_BOARD 
-;
-;
-;
-;
+DISPLAY_BOARD
+	STR R7, R6, #-1	; Save location of call on stack
+	ADD R6, R6, #-1	; 
+
+	LEA	R0, NEWLINE
+	PUTS
+
+	AND R2, R2, #0  ; Counter for moving through the array
+
+DISPLAY_NEXT_VALUE	
+	ADD R3, R5, R2	
 
 
-;----------
-; BOARD vars
+
+
+;------------------------------
+; BOARD formatting data
 ; for displaying the board only
-;----------
+;------------------------------
 
+	SPACE			.FILL	x20 ; space
+	NEW_LINE		.FILL	x0A ; new line
+	BIG_SPACE		.STRINGZ "   "
 
 
 	.END
