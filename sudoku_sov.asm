@@ -3,7 +3,7 @@
 ; Version:	1.0		|
 ;
 ; Authors:	Creed Haymond	|
-;		Tanner Frandsenasdf 	|
+;		Tanner Frandsen 	|
 ;		Brandon Bentley	|
 ; Note:				|
 ; 
