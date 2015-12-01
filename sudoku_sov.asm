@@ -14,6 +14,7 @@ MAIN
 	
 	LD	R6, STACK 	; Load up stack pointer
 	LD 	R5, BOARD 	; Load up board array pointer
+
 	JSR	PROMPT 		; Call subroutine for the first prompt and info
 	JSR	GetAndStore	; Call to subroutine that will get numbers from input and store them
 	JSR	DISPLAY_BOARD
@@ -29,7 +30,7 @@ EndMain	Halt
 ;---------------------
 
 STACK	.FILL	x4000
-DONE	.STRINGZ "done! Exit -- \n"
+DONE	.STRINGZ "\n -- done! Exit -- \n"
 NEWLINE .STRINGZ "\n"	; new line char in LC-3
 
 BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
@@ -85,16 +86,16 @@ GetAndStore
 	STR	R7, R6, #-1	; Save location register
 	ADD	R6, R6, #-1	; Decrement Stack
 
-	AND	R5, R5, #0	; R5 is counter
-	ADD	R5, R5, #16	; LOOP 16 times
-	LEA	R2, BOARD
-
+	AND	R4, R4, #0	; R4 is counter
+	ADD	R4, R4, #6	; LOOP 6 times
+ 
+	ADD	R2, R5, #0	; put BOARD pointer in R2
 
 LOOP 	GETC				; Test Loop for adding input values into an array
 		PUTC				;
 		STR 	R0, R2, #0	; Stores val of R0 into the loaded array R2[] 
 		ADD 	R2, R2, #1	; increments address of array
-		ADD 	R5, R5, #-1	; decrements count
+		ADD 	R4, R4, #-1	; decrements count
 		BRnz	OUTLOOP
 		BRp		LOOP		;
 	
@@ -121,24 +122,23 @@ DISPLAY_BOARD
 	AND R2, R2, #0  ; Counter for moving through the array
 
 DISPLAY_NEXT_VALUE	
-	ADD R3, R5, R2
+	ADD 	R3, R5, R2	; R5 is the board. Adding value of R2 increments it and loads to R0
 	LDR	R0, R3, #0
-	OUT
+	OUT			; Should print value there, but not working. 
 
 
 	LDR	R7, R6, #0		; Load previous location
 	ADD	R6, R6, #1		; Restore Stack location
-	RET					; Return to calling location
+	RET				; Return to calling location
 
 
 ;------------------------------
 ; BOARD formatting data
 ; for displaying the board only
 ;------------------------------
-
-	SPACE			.FILL	x20 ; space
-	NEW_LINE		.FILL	x0A ; new line
-	BIG_SPACE		.STRINGZ "   "
+	SPACE		.FILL	x20 ; space
+	NEW_LINE	.FILL	x0A ; new line
+	BIG_SPACE	.STRINGZ "   "
 
 
 	.END
