@@ -3,8 +3,8 @@
 ; Version:	1.0		|
 ;
 ; Authors:	Creed Haymond	|
-;		Tanner Frandsen	This is the final test to check|
-;		Brandon Bentley	|
+;		Tanner Frandsen		|
+;		Brandon Bentley		|
 ; Note:				|
 ; 
 
@@ -65,7 +65,7 @@ PROMPT
 ;-------------------	
 name	.STRINGZ "Creed :: Tanner :: Brandon's "
 project	.STRINGZ "Sudoku Solver"
-prompt	.STRINGZ "Please input a character: "
+prompt	.STRINGZ "Please input a number: "
 	
 
 
