@@ -87,12 +87,13 @@ GetAndStore
 	ADD	R6, R6, #-1	; Decrement Stack
 
 	AND	R4, R4, #0	; R4 is counter
-	ADD	R4, R4, #6	; LOOP 6 times
- 
+	ADD	R4, R4, #8	; LOOP 16 times
+ 	ADD	R4, R4, R4	; "make 16, with R4"
+
 	ADD	R2, R5, #0	; put BOARD pointer in R2
 
 LOOP 	GETC				; Test Loop for adding input values into an array
-		PUTC				;
+		PUTC			;
 		STR 	R0, R2, #0	; Stores val of R0 into the loaded array R2[] 
 		ADD 	R2, R2, #1	; increments address of array
 		ADD 	R4, R4, #-1	; decrements count
@@ -119,14 +120,60 @@ DISPLAY_BOARD
 	LEA	R0, NEWLINE
 	PUTS
 
-	AND R2, R2, #0  ; Counter for moving through the array
+	AND	R4, R4, #0	; R4 is counter
 
 DISPLAY_NEXT_VALUE	
-	ADD 	R3, R5, R2	; R5 is the board. Adding value of R2 increments it and loads to R0
+	ADD 	R3, R5, R4	; R5 is the board. Adding value of R2 increments it and loads to R0
 	LDR	R0, R3, #0
-	OUT			; Should print value there, but not working. 
+	OUT			; Prints value
+	ADD	R4, R4, #1	; increment counter
 
+	LD	R0, SPACE
+	OUT
 
+	ADD	R0, R4, #-2
+	BRz	DISPLAY_BIGSPACE
+
+	ADD	R0, R4, #-4
+	BRz	DISPLAY_NEXT_LINE
+
+	ADD	R0, R4, #-6
+	BRz	DISPLAY_BIGSPACE
+
+	ADD	R0, R4, #-8
+	BRz	DISPLAY_NEXT_LINE
+
+	ADD	R0, R4, #-10
+	BRz	DISPLAY_BIGSPACE
+
+	ADD	R0, R4, #-12
+	BRz	DISPLAY_NEXT_LINE
+
+	ADD	R0, R4, #-14
+	BRz	DISPLAY_BIGSPACE
+
+	ADD	R0, R4, #-16
+	BRz	FINISH_DISPLAY
+
+	BRnp	DISPLAY_NEXT_VALUE
+	
+DISPLAY_BIGSPACE
+	LEA	R0, BIG_SPACE
+	PUTS
+	BRnzp	DISPLAY_NEXT_VALUE
+
+DISPLAY_NEXT_LINE
+	LD	R0, NEW_LINE
+	OUT
+	
+	ADD	R0, R4, #-16
+	BRnp	DISPLAY_NEXT_VALUE
+	
+
+FINISH_DISPLAY
+	LD	R0, NEW_LINE
+	OUT
+	
 	LDR	R7, R6, #0		; Load previous location
 	ADD	R6, R6, #1		; Restore Stack location
 	RET				; Return to calling location
@@ -138,7 +185,7 @@ DISPLAY_NEXT_VALUE
 ;------------------------------
 	SPACE		.FILL	x20 ; space
 	NEW_LINE	.FILL	x0A ; new line
-	BIG_SPACE	.STRINGZ "   "
+	BIG_SPACE	.STRINGZ " "
 
 
 	.END
