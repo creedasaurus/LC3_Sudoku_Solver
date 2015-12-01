@@ -3,7 +3,7 @@
 ; Version:	1.0		|
 ;
 ; Authors:	Creed Haymond	|
-;		Tanner Frandsenasdf 	|
+;		Tanner Frandsen	This is the final test to check|
 ;		Brandon Bentley	|
 ; Note:				|
 ; 
