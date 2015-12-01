@@ -16,6 +16,9 @@ MAIN
 	LD 	R5, BOARD 	; Load up board array pointer
 	JSR	PROMPT 		; Call subroutine for the first prompt and info
 	;JSR	GetAndStore	; Call to subroutine that will get numbers from input and store them
+	JSR	DISPLAY_BOARD
+	LEA R0, DONE
+	PUTS
 
 EndMain	Halt
 
@@ -26,10 +29,10 @@ EndMain	Halt
 ;---------------------
 
 STACK	.FILL	x4000
-
+DONE	.STRINGZ "done! Exit -- \n"
 NEWLINE .STRINGZ "\n"	; new line char in LC-3
 
-BOARD	.BLKW	81 #0  ; Test array - has value 0 in each location just as placeholder
+BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
 
 
 
@@ -53,7 +56,7 @@ PROMPT
 	LEA 	R0, NEWLINE	;
 	PUTS 				;
 
-	LEA 	R0, prompt	; Outputs Prompt
+	LEA 	R0, promptWord	; Outputs Prompt
 	PUTS				;
 	
 	LDR	R7, R6, #0
@@ -65,7 +68,7 @@ PROMPT
 ;-------------------	
 name	.STRINGZ "Creed :: Tanner :: Brandon's "
 project	.STRINGZ "Sudoku Solver"
-prompt	.STRINGZ "Please input a number: "
+promptWord	.STRINGZ "Please input a number: "
 	
 
 
@@ -116,9 +119,14 @@ DISPLAY_BOARD
 	AND R2, R2, #0  ; Counter for moving through the array
 
 DISPLAY_NEXT_VALUE	
-	ADD R3, R5, R2	
+	ADD R3, R5, R2
+	LDR	R0, R3, #0
+	OUT
 
 
+	LDR	R7, R6, #0		; Load previous location
+	ADD	R6, R6, #1		; Restore Stack location
+	RET					; Return to calling location
 
 
 ;------------------------------
