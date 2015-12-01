@@ -63,7 +63,7 @@ PROMPT
 ;-------------------
 ; Promp Variables
 ;-------------------	
-name	.STRINGZ "Creed :: Tanner :: Brandon's"
+name	.STRINGZ "Creed :: Tanner :: Brandon's "
 project	.STRINGZ "Sudoku Solver"
 prompt	.STRINGZ "Please input a character: "
 	
