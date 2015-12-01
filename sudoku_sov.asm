@@ -1,11 +1,11 @@
-; Program:	sudoku_solv.asm	|
-; Date:		17 Nov. 2015	|
-; Version:	1.0		|
+; Program:	sudoku_solv.asm		|
+; Date:		17 Nov. 2015		|
+; Version:	1.0					|
 ;
-; Authors:	Creed Haymond	|
-;		Tanner Frandsen 	|
-;		Brandon Bentley	|
-; Note:				|
+; Authors:	Creed Haymond		|
+;			Tanner Frandsen 	|
+;			Brandon Bentley		|
+; Note:							|
 ; 
 
 	.ORIG x3000
@@ -65,7 +65,7 @@ PROMPT
 ;-------------------	
 name	.STRINGZ "Creed :: Tanner :: Brandon's "
 project	.STRINGZ "Sudoku Solver"
-prompt	.STRINGZ "Please input a character: "
+prompt	.STRINGZ "Please input a number: "
 	
 
 
