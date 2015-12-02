@@ -17,7 +17,8 @@ MAIN
 
 	JSR	PROMPT 		; Call subroutine for the first prompt and info
 	JSR	GetAndStore	; Call to subroutine that will get numbers from input and store them
-	JSR	DISPLAY_BOARD
+	JSR SOLVE_SUDOKU ;Call subroutine that solves the Sudoku
+	JSR	DISPLAY_BOARD ;Call subroutine that Outputs the console
 	LEA R0, DONE
 	PUTS
 
@@ -204,17 +205,17 @@ SOLVE_LOOP
 	LDR	R0, R3, #0	;loads value at R3 into R0
 	BRZ SOLVE_LOCATION ;If R0 = 0 jump to Solve Location
 INCREMENT_LOCATION
-	ADD R4, R4, #1	;increments to next location if R0 > 0
-	ADD R2, R4, #-16 ;subtracts the 16 from the location
-					 ;if equal to zero then you are done 
-	BRN SOLVE_LOOP	;if not finished then jump to SOLVE_LOOP
+	ADD R4, R4, #1	 ;increments to next location if R0 > 0
+	ADD R2, R4, #-15 ;subtracts the 15 from the location. 
+					 ;if R2 == 0 you are done
+	BRN SOLVE_LOOP	 ;if not finished then jump to SOLVE_LOOP
 
 	
 	LDR	R7, R6, #0		; Load previous location
 	ADD	R6, R6, #1		; Restore Stack location
 	RET				; Return to calling location
 SOLVE_LOCATION
-	ADD R0, R0, #1	;incement R0 by 1
+	ADD R0, R0, #1	;increment value at R0 by 1
 	BRNZP ROW_CHECK	;start the checking starting with the row
 	BRNZP INCREMENT_LOCATION		;If it makes it through all checks jump to the looping cycle
 ; Code
@@ -255,7 +256,6 @@ BRP SOLVE_LOCATION
 COLUMN_CHECK
 
 
-
 BRP SOLVE_LOCATION
 ;---------------------------
 ; COLUMN_CHECK Variables
@@ -287,7 +287,6 @@ BRP SOLVE_LOCATION
 
 ; Variables
 ;
-
 
 
 
