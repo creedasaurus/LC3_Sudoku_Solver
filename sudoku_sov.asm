@@ -16,8 +16,8 @@ MAIN
 	LD 	R5, BOARD 	; Load up board array pointer
 
 	JSR	PROMPT 		; Call subroutine for the first prompt and info
-	JSR	GetAndStore	; Call to subroutine that will get numbers from input and store them
-	JSR	DISPLAY_BOARD
+	JSR	LOAD_BOARD	; Call to subroutine that will get numbers from input and store them
+	JSR	DISPLAY_BOARD ;
 	LEA R0, DONE
 	PUTS
 
@@ -32,7 +32,6 @@ EndMain	Halt
 STACK	.FILL	x4000
 DONE	.STRINGZ "\n -- done! Exit -- \n"
 NEWLINE .STRINGZ "\n"	; new line char in LC-3
-
 BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
 
 
@@ -44,7 +43,7 @@ BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
 ; and prompts
 ;--------------------
 PROMPT	
-	STR	R7, R6, #-1
+	STR	R7, R6, #-1 	; 
 	ADD	R6, R6, #-1
 
 	LEA 	R0, name	; Outputs Names & Newline
@@ -83,7 +82,7 @@ promptWord	.STRINGZ "Please input a number: "
 ; get and store numbers for the board
 ;----------------------------
 
-GetAndStore
+LOAD_BOARD
 
 	STR	R7, R6, #-1	; Save location register
 	ADD	R6, R6, #-1	; Decrement Stack
@@ -94,15 +93,15 @@ GetAndStore
 
 	ADD	R2, R5, #0	; put BOARD pointer in R2
 
-LOOP 	GETC				; Test Loop for adding input values into an array
+GET_LOOP 	GETC				; Test Loop for adding input values into an array
 		PUTC			;
 		STR 	R0, R2, #0	; Stores val of R0 into the loaded array R2[] 
 		ADD 	R2, R2, #1	; increments address of array
 		ADD 	R4, R4, #-1	; decrements count
-		BRnz	OUTLOOP
-		BRp	LOOP		;
+		BRnz	GET_OUT
+		BRp	GET_LOOP		;
 	
-OUTLOOP	
+GET_OUT	
 	LDR	R7, R6, #0		; Load previous location
 	ADD	R6, R6, #1		; Restore Stack location
 	RET					; Return to calling location
@@ -204,24 +203,19 @@ FINISH_DISPLAY
 ;---------------------------
 
 
+
 ;--------------------------
 ; ROW_CHECK
 ; Subroutine
 ; 
 ;--------------------------
-ROW_CHECK
-
-; Code
-;
-;
-
 
 ;---------------------------
 ; ROW_CHECK Variables
 ;---------------------------
 
-; Variables
-;
+
+
 
 
 
