@@ -194,7 +194,29 @@ FINISH_DISPLAY
 ; **** SOLVE_SUDOKU *****
 ; subroutine
 ;------------------------------------
+SOLVE_SUDOKU	
+	STR R7, R6, #-1	; Save location of call on stack
+	ADD R6, R6, #-1	; 
 
+	AND R4, R4, #0  ;initialize the counter at 0
+SOLVE_LOOP
+	ADD R3, R5, R4	;Starts at location 0 of array
+	LDR	R0, R3, #0	;loads value at R3 into R0
+	BRZ SOLVE_LOCATION ;If R0 = 0 jump to Solve Location
+INCREMENT_LOCATION
+	ADD R4, R4, #1	;increments to next location if R0 > 0
+	ADD R2, R4, #-16 ;subtracts the 16 from the location
+					 ;if equal to zero then you are done 
+	BRN SOLVE_LOOP	;if not finished then jump to SOLVE_LOOP
+
+	
+	LDR	R7, R6, #0		; Load previous location
+	ADD	R6, R6, #1		; Restore Stack location
+	RET				; Return to calling location
+SOLVE_LOCATION
+	ADD R0, R0, #1	;incement R0 by 1
+	BRNZP ROW_CHECK	;start the checking starting with the row
+	BRNZP INCREMENT_LOCATION		;If it makes it through all checks jump to the looping cycle
 ; Code
 ;
 ;
@@ -211,9 +233,9 @@ FINISH_DISPLAY
 ;--------------------------
 ROW_CHECK
 
-; Code
-;
-;
+
+
+BRP SOLVE_LOCATION
 
 
 ;---------------------------
@@ -228,15 +250,13 @@ ROW_CHECK
 ;--------------------------
 ; COLUMN_CHECK
 ; Subroutine
-; 
+; R2, R3
 ;--------------------------
 COLUMN_CHECK
 
-; Code
-;
-;
 
 
+BRP SOLVE_LOCATION
 ;---------------------------
 ; COLUMN_CHECK Variables
 ;---------------------------
@@ -254,6 +274,9 @@ COLUMN_CHECK
 ;--------------------------
 BOX_CHECK
 
+
+
+BRP SOLVE_LOCATION
 ; Code
 ;
 ;
