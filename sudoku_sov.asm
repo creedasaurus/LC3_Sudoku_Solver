@@ -73,6 +73,8 @@ promptWord	.STRINGZ "Please input a number: "
 	
 
 
+
+
 ;-----------------------------
 ; GetAndStore
 ; Subroutine
@@ -98,7 +100,7 @@ LOOP 	GETC				; Test Loop for adding input values into an array
 		ADD 	R2, R2, #1	; increments address of array
 		ADD 	R4, R4, #-1	; decrements count
 		BRnz	OUTLOOP
-		BRp		LOOP		;
+		BRp	LOOP		;
 	
 OUTLOOP	
 	LDR	R7, R6, #0		; Load previous location
@@ -186,6 +188,86 @@ FINISH_DISPLAY
 	SPACE		.FILL	x20 ; space
 	NEW_LINE	.FILL	x0A ; new line
 	BIG_SPACE	.STRINGZ " "
+
+
+;------------------------------------
+; **** SOLVE_SUDOKU *****
+; subroutine
+;------------------------------------
+
+; Code
+;
+;
+
+;---------------------------
+; SOLVE_SUDOKU Variables
+;---------------------------
+
+
+;--------------------------
+; ROW_CHECK
+; Subroutine
+; 
+;--------------------------
+ROW_CHECK
+
+; Code
+;
+;
+
+
+;---------------------------
+; ROW_CHECK Variables
+;---------------------------
+
+; Variables
+;
+
+
+
+;--------------------------
+; COLUMN_CHECK
+; Subroutine
+; 
+;--------------------------
+COLUMN_CHECK
+
+; Code
+;
+;
+
+
+;---------------------------
+; COLUMN_CHECK Variables
+;---------------------------
+
+; Variables
+;
+
+
+
+
+;--------------------------
+; BOX_CHECK
+; Subroutine
+; 
+;--------------------------
+BOX_CHECK
+
+; Code
+;
+;
+
+;---------------------------
+; BOX_CHECK Variables
+;---------------------------
+
+; Variables
+;
+
+
+
+
 
 
 	.END
