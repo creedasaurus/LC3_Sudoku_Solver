@@ -276,11 +276,10 @@ BRP SOLVE_LOCATION
 
 
 
-
 ;--------------------------
 ; BOX_CHECK
 ; Subroutine
-; R0: Test number to check (changed to negative)
+; R0: 
 ; R1: Hold The result for the NZP bits
 ; R2: ? RowNumber or  ColNumber
 ; R3: Hold the board value temp using offset number
@@ -291,16 +290,18 @@ BRP SOLVE_LOCATION
 ;--------------------------
 BOX_CHECK
 
+
 	;----- Allow us to return -----;
 	STR	R7, R6, #-1	; Save Return Address
 	ADD	R6, R6, #-1	; Get True Return Address
 
+	LD R0, TEST_NUM	; this is the test number
 
 	; ----------Turn the test number negative -----------;
 	NOT R0, R0		; Flip the bits
 	Add R0, R0, #1 	; Add One to create negative
 
-
+	
 	; load the value from rowNum into R2
 	LD R2, ROWNUM	
 
@@ -317,19 +318,19 @@ BOX_CHECK
 
 
 BOX_1	
-	ADD R2, R2, #0	;start at 0
+	LD R2, QUAD1	;start at 0
 	BRnzp STEP_BOX
 
 BOX_2
-	ADD R2, R2, #2	;start at 2
+	LD R2, QUAD2	;start at 2
 	BRnzp STEP_BOX
 
 BOX_3
-	ADD R2, R2, #8	;start at 8
+	LD R2, QUAD3	;start at 8
 	BRnzp STEP_BOX
 
 BOX_4	
-	ADD R2, R2, #10	;start at 10
+	LD R2, QUAD4	;start at 10
 	BRnzp STEP_BOX
 
 
@@ -337,44 +338,86 @@ STEP_BOX
 ;------- TOP_LEFT number-------------;
 	ADD R2, R2, #0	;0 + [first] = TL
 	ADD R3, R5, R2 	;R3 = (R5 + R2)	 R2 = start number
-	ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
 
-	BRz
-		SOLVE_LOCATION 	; fail the number was found
+	;==========================================================================================================================================;
+	; This was for debug 
+	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	LDR	R0, R3, #0
+	OUT			; Prints value
+	;=========================================================================================================================================;
+
+	;*****************************************************************************************************************************************;
+	;ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
+
+	;BRz
+	;	SOLVE_LOCATION 	; fail the number was found
 	;BRnp
 		;number was not found fall through
+	;*****************************************************************************************************************************************;
 
 ;--------- TOP RIGHT ------------;
 	ADD R2, R2, #1 	;[first] + 1 = TR
 	ADD R3, R5, R2 	;Load the value into R3
-	ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
 
-	BRz
-		SOLVE_LOCATION 	; fail the number was found
+	;========================================================================================================================================;
+	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	LDR	R0, R3, #0
+	OUT		; Prints value
+	;========================================================================================================================================;	
+
+
+	;ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
+
+	;BRz
+	;	SOLVE_LOCATION 	; fail the number was found
 	;BRnp
 		;number was not found fall through
 
+	
 ;---------- Bottom Left -----------;
 	ADD R2, R2, #3 ; [first] + 4 = BL
 	ADD R3, R5, R2 ; Load the value into R3
-	ADD R1, R3, R0 ; R1 = R3 + R0
 
-	BRz
-		SOLVE_LOCATION 	; fail the number was found
+	;========================================================================================================================================;
+	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	LDR	R0, R3, #0
+	OUT			; Prints value
+	;========================================================================================================================================;
+
+	;****************************************************************************************************************************************;
+	;ADD R1, R3, R0 ; R1 = R3 + R0
+
+	;BRz
+	;	SOLVE_LOCATION 	; fail the number was found
 	;BRnp
 		; number was not found fall throught
+	;****************************************************************************************************************************************;
 
 ; --------- Bottom right ------------;
 
 	ADD R2, R2, #1 ;[first] + 5 = BR
 	ADD R3, R5, R2 ; Load the value into R3
-	ADD R1, R3, R0 ; R1 = R3 + R0
 
 
-	BRz
-		SOLVE_LOCATION 	; fail the number was found
+	;========================================================================================================================================;
+	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	LDR	R0, R3, #0
+	OUT		; Prints value
+	;========================================================================================================================================;
+
+	;****************************************************************************************************************************************;
+	;ADD R1, R3, R0 ; R1 = R3 + R0
+
+
+	;BRz
+	;	SOLVE_LOCATION 	; fail the number was found
 	;BRnp
 		; number was not found fall throught
+	;****************************************************************************************************************************************;
+		LDR	R7, R6, #0		; Load previous location
+		ADD	R6, R6, #1		; Restore Stack location
+		RET				; Return to calling location
+
 
 
 
@@ -395,7 +438,7 @@ BOTTOM_BOXES
 
 	LD R2, COLNUM
 
-	AND R1, R1, #0		;Reset the R1
+	ADD R1, R1, #0		;Reset the R1
 	ADD R1, R2, #-2 	;This is the assuming the value of the row in in ColNum
 		BRn
 			BOX_3	;Bottom Right
@@ -405,11 +448,15 @@ BOTTOM_BOXES
 
 
 
-COLNUM .FILL #1
-ROWNUM .FIll #1
+QUAD1 .fill #0
+QUAD2 .fill #2
+QUAD3 .fill #8
+QUAD4 .fill #10
+
+COLNUM .FILL #0
+ROWNUM .FIll #3
 
 .END
-
 
 
 ;==================================================================
