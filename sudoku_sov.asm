@@ -125,7 +125,7 @@ DISPLAY_BOARD
 	AND	R4, R4, #0	; R4 is counter
 
 DISPLAY_NEXT_VALUE	
-	ADD 	R3, R5, R4	; R5 is the board. Adding value of R2 increments it and loads to R0
+	ADD 	R3, R5, R4	; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR	R0, R3, #0
 	OUT			; Prints value
 	ADD	R4, R4, #1	; increment counter
@@ -269,26 +269,140 @@ BRP SOLVE_LOCATION
 ;--------------------------
 ; BOX_CHECK
 ; Subroutine
-; 
+; R0: Test number to check (changed to negative)
+; R1: Hold The result for the NZP bits
+; R2: ? RowNumber
+; R3: ? ColNumber
+; R4: ? Hold the board value temp using offset number
+; R5: Board
+; R6: Return Values
+; R7: Return Values
 ;--------------------------
 BOX_CHECK
 
+	;----- Allow us to return -----;
+	STR	R7, R6, #-1	; Save Return Address
+	ADD	R6, R6, #-1	; Get True Return Address
 
 
-BRP SOLVE_LOCATION
-; Code
-;
-;
-
-;---------------------------
-; BOX_CHECK Variables
-;---------------------------
-
-; Variables
-;
+	; ----------Turn the test number negative -----------;
+	NOT R0, R0		; Flip the bits
+	Add R0, R0, #1 	; Add One to create negative
 
 
+	; load the value from rowNum into R2
+	LD R2, ROWNUM	
+
+	AND R1, R1, #0		;Reset the R1
+	ADD R1, R2, #-2 	;This is the assuming the value of the row in in RowNum
+					;set NZP for the top/bottom boxes
+	BRn 
+		TOP_BOXES
+	
+	BRzp 
+		BOTTOM_BOXES
+	
 
 
 
-	.END
+BOX_1	
+	ADD R2, R2, #0	;start at 0
+	BRnzp STEP_BOX
+
+BOX_2
+	ADD R2, R2, #2	;start at 2
+	BRnzp STEP_BOX
+
+BOX_3
+	ADD R2, R2, #8	;start at 8
+	BRnzp STEP_BOX
+
+BOX_4	
+	ADD R2, R2, #10	;start at 10
+	BRnzp STEP_BOX
+
+
+
+
+
+
+
+
+
+
+STEP_BOX
+;------- TOP_LEFT number-------------;
+	ADD R2, R2, #0	;0 + [first] = TL
+	ADD R4, R5, R2 	;R4 = (R5 + R2)	R2 = start number
+	ADD R1, R4, R0  ;R1 = R4 + R0 is equal?
+
+	BRz
+		SOLVE_LOCATION 	; fail the number was found
+	;BRnp
+		;number was not found fall through
+
+;--------- TOP RIGHT ------------;
+	ADD R2, R2, #1 	;[first] + 1 = TR
+	ADD R4, R5, R2 	;Load the value into R4
+	ADD R1, R4, R0  ;R1 = R4 + R0 is equal?
+
+	BRz
+		SOLVE_LOCATION 	; fail the number was found
+	;BRnp
+		;number was not found fall through
+
+;---------- Bottom Left -----------;
+	ADD R2, R2, #3 ; [first] + 4 = BL
+	ADD R4, R5, R2 ; Load the value into R4
+	ADD R1, R4, R0 ; R1 = R4 + R0
+
+	BRz
+		SOLVE_LOCATION 	; fail the number was found
+	;BRnp
+		; number was not found fall throught
+
+; --------- Bottom right ------------;
+
+	ADD R2, R2, #1 ;[first] + 5 = BR
+	ADD R4, R5, R2 ; Load the value into R4
+	ADD R1, R4, R0 ; R1 = R4 + R0
+
+
+	BRz
+		SOLVE_LOCATION 	; fail the number was found
+	;BRnp
+		; number was not found fall throught
+
+
+
+TOP_BOXES
+
+	LD R3, COLNUM
+
+	AND R1, R1, #0		;Reset the R1
+	ADD R1, R3, #-2 	;This is the assuming the value of the row in in ColNum
+		BRn
+			BOX_1	;Top_Left
+
+		BRzp
+			BOX_2	;Top_Right
+				
+
+BOTTOM_BOXES
+
+	LD R3, COLNUM
+
+	AND R1, R1, #0		;Reset the R1
+	ADD R1, R3, #-2 	;This is the assuming the value of the row in in ColNum
+		BRn
+			BOX_3	;Bottom Right
+			
+		BRzp
+			BOX_4	;Bottom Left
+
+
+
+COLNUM .FILL #1
+ROWNUM .FIll #1
+
+.END
