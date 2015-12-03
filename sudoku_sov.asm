@@ -272,8 +272,8 @@ BRP SOLVE_LOCATION
 ; R0: Test number to check (changed to negative)
 ; R1: Hold The result for the NZP bits
 ; R2: ? RowNumber or  ColNumber
-; R3: Open
-; R4: ? Hold the board value temp using offset number
+; R3: Hold the board value temp using offset number
+; R4: Counter
 ; R5: Board
 ; R6: Return Values
 ; R7: Return Values
@@ -326,7 +326,7 @@ STEP_BOX
 ;------- TOP_LEFT number-------------;
 	ADD R2, R2, #0	;0 + [first] = TL
 	ADD R3, R5, R2 	;R3 = (R5 + R2)	 R2 = start number
-	ADD R1, R3, R0  ;R1 = R4 + R0 is equal?
+	ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
 
 	BRz
 		SOLVE_LOCATION 	; fail the number was found
@@ -335,7 +335,7 @@ STEP_BOX
 
 ;--------- TOP RIGHT ------------;
 	ADD R2, R2, #1 	;[first] + 1 = TR
-	ADD R3, R5, R2 	;Load the value into R4
+	ADD R3, R5, R2 	;Load the value into R3
 	ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
 
 	BRz
@@ -345,7 +345,7 @@ STEP_BOX
 
 ;---------- Bottom Left -----------;
 	ADD R2, R2, #3 ; [first] + 4 = BL
-	ADD R3, R5, R2 ; Load the value into R4
+	ADD R3, R5, R2 ; Load the value into R3
 	ADD R1, R3, R0 ; R1 = R3 + R0
 
 	BRz
@@ -356,7 +356,7 @@ STEP_BOX
 ; --------- Bottom right ------------;
 
 	ADD R2, R2, #1 ;[first] + 5 = BR
-	ADD R3, R5, R2 ; Load the value into R4
+	ADD R3, R5, R2 ; Load the value into R3
 	ADD R1, R3, R0 ; R1 = R3 + R0
 
 
