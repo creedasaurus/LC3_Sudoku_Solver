@@ -12,13 +12,20 @@
 
 MAIN
 	
-	LD	R6, STACK 	; Load up stack pointer
-	LD 	R5, BOARD 	; Load up board array pointer
+	LD R6, STACK 	; Load up stack pointer
+	LD R5, BOARD 	; Load up board array pointer
 
-	JSR	PROMPT 		; Call subroutine for the first prompt and info
-	JSR	LOAD_BOARD	; Call to subroutine that will get numbers from input and store them
-	JSR SOLVE_SUDOKU ;Call subroutine that solves the Sudoku
-	JSR	DISPLAY_BOARD ;
+	JSR	PROMPT 			; Call subroutine for the first prompt and info
+
+	JSR	LOAD_BOARD	 	; Call to subroutine that will get numbers from input and store them
+	JSR	DISPLAY_BOARD	; Display in formatted board
+
+	;JSR SOLVE_SUDOKU 	; Call subroutine that solves the Sudoku
+	JSR SOLVE_BOARD 	
+
+
+	JSR	DISPLAY_BOARD	; Display board AGAIN, Solved. 
+
 	LEA R0, DONE
 	PUTS
 
@@ -32,7 +39,6 @@ EndMain	Halt
 
 STACK	.FILL	x4000
 DONE	.STRINGZ "\n -- done! Exit -- \n"
-NEWLINE .STRINGZ "\n"	; new line char in LC-3
 BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
 
 
@@ -47,41 +53,52 @@ PROMPT
 	STR	R7, R6, #-1 	; 
 	ADD	R6, R6, #-1
 
-	LEA 	R0, name	; Outputs Names & Newline
+	LEA R0, name		; Outputs Names & Newline
 	PUTS				; 
-	LEA 	R0, NEWLINE	;
-	PUTS			 	;
+	LD R0, NEW_LINE		;
+	OUT			 		;
 
-	LEA 	R0, project	; Outputs Project & Newline
+	LEA R0, project		; Outputs Project & Newline
 	PUTS				; 
-	LEA 	R0, NEWLINE	;
-	PUTS 				;
+	LD R0, NEW_LINE		;
+	OUT 				;
 
-	LEA 	R0, promptWord	; Outputs Prompt
+	LEA R0, promptWord	; Outputs Prompt
 	PUTS				;
 	
-	LDR	R7, R6, #0
-	ADD	R6, R6, #1
+	LDR	R7, R6, #0		; Return to JSR calling location
+	ADD	R6, R6, #1		; & restor stack
 	RET
 
 ;-------------------
 ; Promp Variables
 ;-------------------	
-name	.STRINGZ "Creed :: Tanner :: Brandon's "
-project	.STRINGZ "Sudoku Solver"
-promptWord	.STRINGZ "Please input a number: "
+name		.STRINGZ "Creed :: Tanner :: Brandon's "
+project		.STRINGZ "Sudoku Solver"
+promptWord	.STRINGZ "Please enter 16 numbers between 0 & 4: \n"
 	
 
 
-
-
-;-----------------------------
-; GetAndStore
-; Subroutine
-; *currently proof of concept*
-; This shows an example of how we can
-; get and store numbers for the board
-;----------------------------
+;------------------------------------
+; ***** LOAD_BOARD *****
+; 		Subroutine
+; 
+; - gets 16 numbers input from the user
+; between the numbers 0 & 4
+;
+; Clobbers:
+; R0 = display register
+; R1 = find 0
+; R2 = 
+; R3 = incremented board 
+; R4 = counter to get through the board *should be restored if 
+; 		you jump to another sub that clobbers it. 
+; 
+; NO TOUCHEEE 
+; R5 = loaded board
+; R6 = stack
+; R7 = PC counter thing 
+;------------------------------------
 
 LOAD_BOARD
 
@@ -92,51 +109,69 @@ LOAD_BOARD
 	ADD	R4, R4, #8	; LOOP 16 times
  	ADD	R4, R4, R4	; "make 16, with R4"
 
-	ADD	R2, R5, #0	; put BOARD pointer in R2
+	ADD	R3, R5, #0	; put BOARD pointer in R2
 
-GET_LOOP 	GETC				; Test Loop for adding input values into an array
-		PUTC			;
-		STR 	R0, R2, #0	; Stores val of R0 into the loaded array R2[] 
-		ADD 	R2, R2, #1	; increments address of array
-		ADD 	R4, R4, #-1	; decrements count
-		BRnz	GET_OUT
-		BRp	GET_LOOP		;
+GET_LOOP 	
+	GETC			; Test Loop for adding input values into an array
+	OUT				;
+
+	;****************************
+	;
+	; Call error check for 0 - 4
+	; - not yet implemented
+	;
+	;****************************
+
+	STR R0, R3, #0		; Stores val of R0 into the loaded array R2[] 
+	ADD R3, R3, #1		; increments address of array
+
+	LD R0, SPACE		; puts space for readability
+	OUT
+
+	ADD R4, R4, #-1		; decrements count
+	BRnz GET_OUT
+	BRp  GET_LOOP		;
 	
 GET_OUT	
 	LDR	R7, R6, #0		; Load previous location
 	ADD	R6, R6, #1		; Restore Stack location
 	RET					; Return to calling location
-		
 
 
 
-
-
-
-
-
-
-
-
-
-;------------------------------
-; Subroutine: DISPLAY_BOARD
-;
-; puts the current board config 
-; using whatever is stored in BOARD
-;------------------------------
+;------------------------------------
+; ***** DISPLAY_BOARD *****
+; 		Subroutine
+; 
+; - Displays the contents of 
+; the array in sudoku form
+; 
+; Clobbers:
+; R0 = display register
+; R1 = 
+; R2 = 
+; R3 = incremented board 
+; R4 = counter to get through the board *should be restored if 
+; 		you jump to another sub that clobbers it. 
+; 
+; NO TOUCHEEE 
+; R5 = loaded board
+; R6 = stack
+; R7 = PC counter thing 
+;------------------------------------
 
 DISPLAY_BOARD
 	STR R7, R6, #-1	; Save location of call on stack
 	ADD R6, R6, #-1	; 
 
-	LEA	R0, NEWLINE
-	PUTS
+	LD	R0, NEW_LINE
+	OUT
+	OUT
 
 	AND	R4, R4, #0	; R4 is counter
 
 DISPLAY_NEXT_VALUE	
-	ADD 	R3, R5, R4	; R5 is the board. Adding value of R4 increments it and loads to R0
+	ADD R3, R5, R4	; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR	R0, R3, #0
 	OUT			; Prints value
 	ADD	R4, R4, #1	; increment counter
@@ -199,6 +234,152 @@ FINISH_DISPLAY
 	SPACE		.FILL	x20 ; space
 	NEW_LINE	.FILL	x0A ; new line
 	BIG_SPACE	.STRINGZ " "
+
+
+
+
+;------------------------------------
+; ***** SOLVE_BOARD *****
+; 		Subroutine
+; - moves through array finding 0's and 
+; keeping track of the row and column counters
+; calls separate SUB that will test new 
+; numbers for the unsolved locations
+; 
+; Clobbers:
+; R0 = display register
+; R1 = find 0
+; R2 = 
+; R3 = incremented board 
+; R4 = counter to get through the board *should be restored if 
+; 		you jump to another sub that clobbers it. 
+; NO TOUCHEEE 
+; R5 = loaded board
+; R6 = stack
+; R7 = PC counter thing 
+;------------------------------
+
+SOLVE_BOARD
+	STR R7, R6, #-1	; Save location of call on stack
+	ADD R6, R6, #-1	; 
+
+	LD	R0, NEW_LINE 	; just in case we need to output DEBUG 
+	OUT 				; info during the running of this
+
+	AND	R4, R4, #0		; R4 is counter
+	
+	LD	R1, RESET		;
+	NOT	R1, R1			; 
+	ADD	R1, R1, #1		; make inverted ASCII "0" to check against
+
+SOLVE_NEXT_VALUE	
+	ADD R3, R5, R4	; R5 is the board. Adding value of R4 increments it and loads to R0
+	LDR R0, R3, #0
+	
+	ADD	R0, R0, R1	; check for 0
+	BRz	SOLVE_ZERO
+	
+	BRnp CONTINUE
+
+CONTINUE	
+	ADD	R4, R4, #1			; increment array counter
+
+	LD R0, column 			; upacks, increments, & repacks column count
+	ADD R0, R0, #1
+	ST R0, column
+
+	ADD	R0, R4, #-4			;
+	BRz	GOTO_NEXT_LINE		;
+							;
+	ADD	R0, R4, #-8			;
+	BRz	GOTO_NEXT_LINE		; These direct the counting
+							; of the columns and rows
+	ADD	R0, R4, #-12		;
+	BRz	GOTO_NEXT_LINE		;
+							;
+	ADD	R0, R4, #-16		;
+	BRz	FINISH_SOLVE		;
+
+	BRnp	SOLVE_NEXT_VALUE
+
+	
+SOLVE_ZERO
+	LD R0, zero_count		; unpacks, increments, & repacks zero counter
+	ADD R0, R0, #1
+	ST R0, zero_count
+	
+	;*****************************************
+	; CALL SOLVE POSITION SUB
+	; - This will hand over the solving to Brandon's sub 
+	; that will increment the test_num and loop until one 
+	; works
+	; ;lajsdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasd
+	;*****************************************
+
+	BRnzp CONTINUE
+
+
+GOTO_NEXT_LINE
+	
+	LD  R0, RESET 			; resets column counter 
+	ST  R0, column
+
+	LD  R0, row 			; unpacks, increments, and packs row counter
+	ADD R0, R0, #1
+	ST  R0, row
+
+	ADD R0, R4, #-16    	; if its the last element in the array
+	BRnp SOLVE_NEXT_VALUE	; drop through, if not, SOLVE_NEXT_VALUE
+	
+
+FINISH_SOLVE
+
+	LD  R0, column 		; Decrement column count by 1
+	ADD R0, R0, #-1		; since it skips the last reset 
+	ST  R0, column
+
+	LD R0, NEW_LINE
+	OUT
+
+	LD R0, column
+	OUT
+
+	LD R0, NEW_LINE
+	OUT
+
+	LD R0, row
+	OUT
+
+	LD R0, NEW_LINE
+	OUT
+
+	LD R0, zero_count
+	OUT
+
+	LDR	R7, R6, #0		; Load previous location
+	ADD	R6, R6, #1		; Restore Stack location
+	RET					; Return to calling location
+
+;******** GO BACK TO CALLING JSR *******
+
+
+;-------------------------------------
+; *** SOLVE VARS *** 
+; Imporant "global-ish" Solving Variables
+; and Data. 
+; *** Use these in the other checks ***
+; ------------------------------------
+
+;--- Constant
+RESET 		.FILL x30 
+
+;--- Variable
+test_num	.FILL x30 
+column 		.FILL x30
+row 		.FILL x30
+zero_count	.FILL x30
+
+
 
 
 ;------------------------------------
@@ -281,7 +462,7 @@ BRP SOLVE_LOCATION
 ; Subroutine
 ; R0: 
 ; R1: Hold The result for the NZP bits
-; R2: ? RowNumber or  ColNumber
+; R2: ? row or  column
 ; R3: Hold the board value temp using offset number
 ; R4: Counter
 ; R5: Board
@@ -295,27 +476,23 @@ BOX_CHECK
 	STR	R7, R6, #-1	; Save Return Address
 	ADD	R6, R6, #-1	; Get True Return Address
 
-	LD R0, TEST_NUM	; this is the test number
+	LD  R0, test_num	; this is the test number
 
 	; ----------Turn the test number negative -----------;
 	NOT R0, R0		; Flip the bits
 	Add R0, R0, #1 	; Add One to create negative
 
 	
-	; load the value from rowNum into R2
-	LD R2, ROWNUM	
+	
+	LD  R2, row	; load the value from row into R2
 
 	AND R1, R1, #0		;Reset the R1
-	ADD R1, R2, #-2 	;This is the assuming the value of the row in in RowNum
+	ADD R1, R2, #-2 	;This is the assuming the value of the row in in row
 					;set NZP for the top/bottom boxes
-	BRn 
-		TOP_BOXES
+	BRn TOP_BOXES
 	
-	BRzp 
-		BOTTOM_BOXES
+	BRzp BOTTOM_BOXES
 	
-
-
 
 BOX_1	
 	LD R2, QUAD1	;start at 0
@@ -341,7 +518,7 @@ STEP_BOX
 
 	;==========================================================================================================================================;
 	; This was for debug 
-	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	ADD R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR	R0, R3, #0
 	OUT			; Prints value
 	;=========================================================================================================================================;
@@ -360,7 +537,7 @@ STEP_BOX
 	ADD R3, R5, R2 	;Load the value into R3
 
 	;========================================================================================================================================;
-	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	ADD R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR	R0, R3, #0
 	OUT		; Prints value
 	;========================================================================================================================================;	
@@ -379,7 +556,7 @@ STEP_BOX
 	ADD R3, R5, R2 ; Load the value into R3
 
 	;========================================================================================================================================;
-	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	ADD R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR	R0, R3, #0
 	OUT			; Prints value
 	;========================================================================================================================================;
@@ -400,7 +577,7 @@ STEP_BOX
 
 
 	;========================================================================================================================================;
-	ADD 	R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	ADD R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR	R0, R3, #0
 	OUT		; Prints value
 	;========================================================================================================================================;
@@ -414,343 +591,40 @@ STEP_BOX
 	;BRnp
 		; number was not found fall throught
 	;****************************************************************************************************************************************;
-		LDR	R7, R6, #0		; Load previous location
-		ADD	R6, R6, #1		; Restore Stack location
-		RET				; Return to calling location
+	LDR	R7, R6, #0		; Load previous location
+	ADD	R6, R6, #1		; Restore Stack location
+	RET					; Return to calling location
 
 
 
 
 TOP_BOXES
 
-	LD R2, COLNUM
+	LD  R2, column
 
 	AND R1, R1, #0		;Reset the R1
-	ADD R1, R2, #-2 	;This is the assuming the value of the row in in ColNum
-		BRn
-			BOX_1	;Top_Left
+	ADD R1, R2, #-2 	;This is the assuming the value of the row in in column
+		BRn BOX_1	;Top_Left
 
-		BRzp
-			BOX_2	;Top_Right
+		BRzp BOX_2	;Top_Right
 				
 
 BOTTOM_BOXES
 
-	LD R2, COLNUM
+	LD  R2, column
 
 	ADD R1, R1, #0		;Reset the R1
-	ADD R1, R2, #-2 	;This is the assuming the value of the row in in ColNum
-		BRn
-			BOX_3	;Bottom Right
+	ADD R1, R2, #-2 	;This is the assuming the value of the row in in column
+	
+	BRn BOX_3	;Bottom Right
 			
-		BRzp
-			BOX_4	;Bottom Left
+	BRzp BOX_4	;Bottom Left
 
 
 
-QUAD1 .fill #0
-QUAD2 .fill #2
-QUAD3 .fill #8
-QUAD4 .fill #10
-
-COLNUM .FILL #0
-ROWNUM .FIll #3
-
-.END
-
-
-;==================================================================
-; ------------- DEBUGGING STILL --------------
-;				   * IGNORE *
-; This is some stuff I've been working on. 
-; I think we can implement it in the calling of the sovle functions
-; need to upload it here so I can sync it on my computers and work on it 
-; elsewhere;
-
-	.ORIG x3000
-
-MAIN
-	
-	LD	R6, STACK 	; Load up stack pointer
-	LD 	R5, BOARD 	; Load up board array pointer
-
-	JSR	PROMPT 		; Call subroutine for the first prompt and info
-	JSR	LOAD_BOARD	; Call to subroutine that will get numbers from input and store them
-	;JSR SOLVE_SUDOKU ;Call subroutine that solves the Sudoku
-	
-	;JSR INCR_COLUMN_ROW ; DEBUG
-
-	JSR	DISPLAY_BOARD ;
-	LEA R0, DONE
-	PUTS
-
-EndMain	Halt
-
-
-;---------------------
-; Global data
-;
-;---------------------
-
-STACK	.FILL	x4000
-DONE	.STRINGZ "\n -- done! Exit -- \n"
-NEWLINE .STRINGZ "\n"	; new line char in LC-3
-BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
-
-
-
-;-------------------
-; PROMPT
-; Subroutine
-; this will display the initial info
-; and prompts
-;--------------------
-PROMPT	
-	STR	R7, R6, #-1 	; 
-	ADD	R6, R6, #-1
-
-	LEA 	R0, name	; Outputs Names & Newline
-	PUTS				; 
-	LEA 	R0, NEWLINE	;
-	PUTS			 	;
-
-	LEA 	R0, project	; Outputs Project & Newline
-	PUTS				; 
-	LEA 	R0, NEWLINE	;
-	PUTS 				;
-
-	LEA 	R0, promptWord	; Outputs Prompt
-	PUTS				;
-	
-	LDR	R7, R6, #0
-	ADD	R6, R6, #1
-	RET
-
-;-------------------
-; Promp Variables
-;-------------------	
-name	.STRINGZ "Creed :: Tanner :: Brandon's "
-project	.STRINGZ "Sudoku Solver"
-promptWord	.STRINGZ "Please input a set of numbers: "
-	
-
-
-
-
-;-----------------------------
-; GetAndStore
-; Subroutine
-; *currently proof of concept*
-; This shows an example of how we can
-; get and store numbers for the board
-;----------------------------
-
-LOAD_BOARD
-
-	STR	R7, R6, #-1	; Save location register
-	ADD	R6, R6, #-1	; Decrement Stack
-
-	AND	R4, R4, #0	; R4 is counter
-	ADD	R4, R4, #8	; LOOP 16 times
- 	ADD	R4, R4, R4	; "make 16, with R4"
-
-	ADD	R2, R5, #0	; put BOARD pointer in R2
-
-GET_LOOP 	
-	GETC				; Test Loop for adding input values into an array
-	PUTC			;
-	STR 	R0, R2, #0	; Stores val of R0 into the loaded array R2[] 
-	ADD 	R2, R2, #1	; increments address of array\
-	
-	LD		R0, SPACE	
-	OUT
-	
-	ADD 	R4, R4, #-1	; decrements count
-	BRnz	GET_OUT
-	BRp	GET_LOOP		;
-	
-GET_OUT	
-	LDR	R7, R6, #0		; Load previous location
-	ADD	R6, R6, #1		; Restore Stack location
-	RET					; Return to calling location
-		
-
-;------------------------------
-; Subroutine: DISPLAY_BOARD
-;
-; puts the current board config 
-; using whatever is stored in BOARD
-; 
-; Clobbers:
-; R0 = display register
-; R1 = find 0
-; R2 = 0's counted
-;------------------------------
-
-DISPLAY_BOARD
-	STR R7, R6, #-1	; Save location of call on stack
-	ADD R6, R6, #-1	; 
-
-	LEA	R0, NEWLINE
-	PUTS
-
-	AND	R4, R4, #0	; R4 is counter
-	
-	LD	R1, RESET	; give R1, #0
-	NOT	R1, R1		; 
-	ADD	R1, R1, #1	; make - #0 
-
-	AND	R2, R2, #0	; R2 is counter of 0's
-
-DISPLAY_NEXT_VALUE	
-	ADD 	R3, R5, R4	; R5 is the board. Adding value of R4 increments it and loads to R0
-	LDR		R0, R3, #0
-	OUT					; Prints value
-	
-	ADD	R0, R0, R1	; check for 0
-	BRz	INC_ZEROS
-	
-	BRnp	CONTINUE
-
-CONTINUE	
-	ADD	R4, R4, #1	; increment counter
-
-	LD R0, COLUMN
-	ADD R0, R0, #1
-	ST R0, COLUMN
-
-	LD	R0, SPACE
-	OUT
-
-	ADD	R0, R4, #-2
-	BRz	DISPLAY_BIGSPACE
-
-	ADD	R0, R4, #-4
-	BRz	DISPLAY_NEXT_LINE
-
-	ADD	R0, R4, #-6
-	BRz	DISPLAY_BIGSPACE
-
-	ADD	R0, R4, #-8
-	BRz	DISPLAY_NEXT_LINE
-
-	ADD	R0, R4, #-10
-	BRz	DISPLAY_BIGSPACE
-
-	ADD	R0, R4, #-12
-	BRz	DISPLAY_NEXT_LINE
-
-	ADD	R0, R4, #-14
-	BRz	DISPLAY_BIGSPACE
-
-	ADD	R0, R4, #-16
-	BRz	FINISH_DISPLAY
-
-	BRnp	DISPLAY_NEXT_VALUE
-
-	
-;--------------------------
-; INC_ZEROS could also be used to call the subroutine that
-; will begin solving that zero. At this point, the ROW
-; and COLUMN variables will be set properly in order to call
-; the solving subroutine.
-;---------------------------
-INC_ZEROS
-	LD R0, ZERO_COUNT
-	ADD R0, R0, #1
-	ST R0, ZERO_COUNT
-	; CALL SOLVE POSITION SUB
-	BRnzp CONTINUE
-;-----------
-;
-DISPLAY_BIGSPACE
-	LEA	R0, BIG_SPACE
-	PUTS
-	BRnzp	DISPLAY_NEXT_VALUE
-
-DISPLAY_NEXT_LINE
-	LD	R0, NEW_LINE
-	OUT
-	
-	LD R0, RESET
-	ST R0, COLUMN
-
-	LD R0, ROW
-	ADD R0, R0, #1
-	ST R0, ROW
-
-
-	ADD	R0, R4, #-16
-	BRnp	DISPLAY_NEXT_VALUE
-	
-
-FINISH_DISPLAY
-	LD	R0, NEW_LINE
-	OUT
-
-	LD R0, COLUMN
-	ADD R0, R0, #-1
-	OUT
-
-	LD	R0, NEW_LINE
-	OUT
-
-	LD R0, ROW
-	OUT
-
-	LD	R0, NEW_LINE
-	OUT
-
-	LD	R0, ZERO_COUNT
-	OUT
-
-	LDR	R7, R6, #0		; Load previous location
-	ADD	R6, R6, #1		; Restore Stack location
-	RET				; Return to calling location
-
-
-;------------------------------
-; BOARD formatting data
-; for displaying the board only
-;------------------------------
-	SPACE		.FILL	x20 ; space
-	NEW_LINE	.FILL	x0A ; new line
-	BIG_SPACE	.STRINGZ " "
-
-
-
-
-;------------------------------------
-; **** SOLVE_SUDOKU *****
-; subroutine
-;
-; r4 = counter
-; r3 = array pointer
-; 
-;
-;------------------------------------
-
-SOLVE_SUDOKU	
-	STR R7, R6, #-1	; Save location of call on stack
-	ADD R6, R6, #-1	; 
-
-	AND R4, R4, #0  ; initialize the counter at 0
-
-
-
-	
-	LDR	R7, R6, #0		; Load previous location
-	ADD	R6, R6, #1		; Restore Stack location
-	RET				; Return to calling location
-
-
-
-
-zerofound	.STRINGZ	"\nfound zero\n"
-
-COLUMN .FILL x30
-ROW .FIll x30
-RESET .FILL x30
-ZERO_COUNT	.FILL	x30
+QUAD1 .FILL #0
+QUAD2 .FILL #2
+QUAD3 .FILL #8
+QUAD4 .FILL #10
 
 .END
