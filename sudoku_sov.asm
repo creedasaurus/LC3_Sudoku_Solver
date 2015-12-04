@@ -43,12 +43,23 @@ BOARD	.BLKW	16  ; Test array - has value 0 in each location just as placeholder
 
 
 
-;-------------------
-; PROMPT
-; Subroutine
-; this will display the initial info
-; and prompts
-;--------------------
+;------------------------------------
+;   ***** PROMPT *****
+; 		Subroutine
+; - Just displays initial message and prompt
+; 
+; Clobbers:
+; R0 = display register
+; R1 = 
+; R2 = 
+; R3 = 
+; R4 = 
+;
+; NO TOUCHEEE 
+; R5 = loaded board
+; R6 = stack
+; R7 = PC counter thing 
+;------------------------------
 PROMPT	
 	STR	R7, R6, #-1 	; 
 	ADD	R6, R6, #-1
@@ -374,7 +385,6 @@ FINISH_SOLVE
 RESET 		.FILL x30 
 
 ;--- Variable
-test_num	.FILL x30 
 column 		.FILL x30
 row 		.FILL x30
 zero_count	.FILL x30
@@ -416,6 +426,7 @@ SOLVE_LOCATION
 ;---------------------------
 ; SOLVE_SUDOKU Variables
 ;---------------------------
+test_num	.FILL x30 
 
 
 
