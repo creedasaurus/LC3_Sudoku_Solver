@@ -279,11 +279,12 @@ SOLVE_BOARD
 
 	AND	R4, R4, #0			; R4 is counter
 	
-	LD	R1, RESET			;
+	LD	R1, RESET_ASCII			;
 	NOT	R1, R1				; 
 	ADD	R1, R1, #1			; make inverted ASCII "0" to check against
 
-SOLVE_NEXT_VALUE	
+SOLVE_NEXT_VALUE
+
 	ADD R3, R5, R4			; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR R0, R3, #0
 	
@@ -326,9 +327,11 @@ FOUND_ZERO
 	; works
 	; ;lajsdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasd
 	;*****************************************
+
+	LD  R0, RESET_ASCII 	; resets test_num
+	ST  R0, test_num
+
 	JSR SOLVE_ZERO
-	LEA R0, name
-	PUTS
 
 	BRnzp CONTINUE
 
@@ -376,15 +379,18 @@ FINISH_SOLVE
 
 ;******** GO BACK TO CALLING JSR *******
 
-;--- Constant
-RESET 		.FILL #0
+;--- Constant 
+RESET_ASCII 	.FILL x30
+RESET 			.FILL #0
 
 ;--- Variable
 column 		.FILL #0
 row 		.FILL #0
 zero_count	.FILL x30
 
-
+;**********
+test_num	.FILL x30 		; starts with 0 every time SOLVE_ZERO is called
+;**********
 
 ;------------------------------------
 ; ***** SOLVE_ZERO *****
@@ -397,7 +403,7 @@ zero_count	.FILL x30
 ; R0 = display register
 ; R1 = tes_num loaded & incremented
 ; R2 = 
-; R3 =  
+; R3 = KEEPS R3 from calling sub ~ location in array
 ; R4 = 
 ;  
 ; NO TOUCHEEE 
@@ -408,29 +414,34 @@ zero_count	.FILL x30
 
 SOLVE_ZERO
 	STR R1, R6, #-1 ; saves R1
-	STR R3, R6, #-2 ; saves R3
-	STR R4, R6, #-3 ; saves R4
-	STR R7, R6, #-4	; Save location of call on stack
-	ADD R6, R6, #-4	; 
+	STR R4, R6, #-2 ; saves R4
+	STR R7, R6, #-3	; Save location of call on stack
+	ADD R6, R6, #-3	; 
 
-
-TEST_NEW_VAL
-	LD R0, NEW_LINE
+	
+	LD  R0, NEW_LINE
 	OUT
-	LEA R0, name
+
+	LEA R0, FOUND_ONE
 	PUTS
 
-	LD R0, test_num
-	OUT
-
-FINISH_SOLVING_ZERO
-	LDR R7, R6, #0		; Reload location of call from stack
-	STR R4, R6, #1 		; reloads R4
-	STR R3, R6, #2 		; reloads R3
-	STR R1, R6, #3 		; reloads R1
-	ADD R6, R6, #4 		; 
+TEST_NEW_VAL
+	LD  R1, test_num	; Load in test_num to R1
+	ADD R1, R1, #1		; increment
+	NOT R1, R1			; flip
+	ADD R1, R1, #1		; make ASCII opposite
 
 
+
+
+
+
+;----------------------
+; Debugging Constants
+;----------------------
+
+
+FOUND_ONE 	.STRINGZ "Found one!"
 
 
 ;;------------------------------------
@@ -463,7 +474,6 @@ FINISH_SOLVING_ZERO
 ;---------------------------
 ; SOLVE_SUDOKU Variables
 ;---------------------------
-test_num	.FILL x31 		; value of 1 to test first
 
 
 
@@ -519,28 +529,35 @@ test_num	.FILL x31 		; value of 1 to test first
 ;--------------------------
 BOX_CHECK
 
-
-	;----- Allow us to return -----;
-	STR	R7, R6, #-1	; Save Return Address
-	ADD	R6, R6, #-1	; Get True Return Address
-
-	LD  R0, test_num	; this is the test number
+	;LD  R0, test_num	; this is the test number
 
 	; ----------Turn the test number negative -----------;
-	NOT R0, R0		; Flip the bits
-	Add R0, R0, #1 	; Add One to create negative
+	;NOT R0, R0			; Flip the bits
+	;Add R0, R0, #1 	; Add One to create negative
 
-	
-	
-	LD  R2, row	; load the value from row into R2
+	LD  R2, row			; load the value from row into R2
 
-	AND R1, R1, #0		;Reset the R1
-	ADD R1, R2, #-2 	;This is the assuming the value of the row in in row
-					;set NZP for the top/bottom boxes
-	BRn TOP_BOXES
+	ADD R0, R2, #-2 	; This is the assuming the value of the row in in row
+						; set NZP for the top/bottom boxes
+	BRn TOP_BOXES		; if row value - 2 = negative, its the top two boxes
 	
-	BRzp BOTTOM_BOXES
+	BRzp BOTTOM_BOXES	; if row value - 2 = zero or positive, its bottom boxes
 	
+
+TOP_BOXES
+	LD  R2, column
+	ADD R0, R2, #-2 	;This is the assuming the value of the row is in column
+	BRn BOX_1			;Top_Left
+	BRzp BOX_2			;Top_Right
+
+
+BOTTOM_BOXES
+	LD  R2, column
+	ADD R0, R2, #-2 	;This is the assuming the value of the row in in column
+	BRn BOX_3			;Bottom Right
+	BRzp BOX_4			;Bottom Left
+
+
 
 BOX_1	
 	LD R2, QUAD1	;start at 0
@@ -562,22 +579,20 @@ BOX_4
 STEP_BOX
 ;------- TOP_LEFT number-------------;
 	ADD R2, R2, #0	;0 + [first] = TL
-	ADD R3, R5, R2 	;R3 = (R5 + R2)	 R2 = start number
+	ADD R4, R5, R2 	;R4 = (R5 + R2)	 R2 = start number
 
 	;==========================================================================================================================================;
 	; This was for debug 
-	ADD R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
-	LDR	R0, R3, #0
-	OUT			; Prints value
+	;ADD R3, R5, R2	; R5 is the board. Adding value of R4 increments it and loads to R0
+	;LDR	R0, R3, #0
+	;OUT			; Prints value
 	;=========================================================================================================================================;
 
 	;*****************************************************************************************************************************************;
-	;ADD R1, R3, R0  ;R1 = R3 + R0 is equal?
+	ADD R1, R4, R0  		;R1 = R4 + R0 is equal?
 
-	;BRz
-	;	SOLVE_LOCATION 	; fail the number was found
-	;BRnp
-		;number was not found fall through
+	BRz SOLVE_LOCATION 		; fail the number was found
+	BRnp 					;number was not found fall through
 	;*****************************************************************************************************************************************;
 
 ;--------- TOP RIGHT ------------;
@@ -646,27 +661,9 @@ STEP_BOX
 
 
 
-TOP_BOXES
 
-	LD  R2, column
-
-	AND R1, R1, #0		;Reset the R1
-	ADD R1, R2, #-2 	;This is the assuming the value of the row in in column
-		BRn BOX_1	;Top_Left
-
-		BRzp BOX_2	;Top_Right
 				
 
-BOTTOM_BOXES
-
-	LD  R2, column
-
-	ADD R1, R1, #0		;Reset the R1
-	ADD R1, R2, #-2 	;This is the assuming the value of the row in in column
-	
-	BRn BOX_3	;Bottom Right
-			
-	BRzp BOX_4	;Bottom Left
 
 
 
@@ -676,7 +673,12 @@ QUAD3 .FILL #8
 QUAD4 .FILL #10
 
 
-
+FINISH_SOLVING_ZERO
+	LDR R7, R6, #0		; Reload location of call from stack
+	LDR R4, R6, #1 		; reloads R4
+	LDR R1, R6, #2 		; reloads R1
+	ADD R6, R6, #3 		; 
+	RET
 
 
 
