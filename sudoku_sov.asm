@@ -271,24 +271,24 @@ FINISH_DISPLAY
 ;------------------------------
 
 SOLVE_BOARD
-	STR R7, R6, #-1	; Save location of call on stack
-	ADD R6, R6, #-1	; 
+	STR R7, R6, #-1			; Save location of call on stack
+	ADD R6, R6, #-1			; 
 
-	LD	R0, NEW_LINE 	; just in case we need to output DEBUG 
-	OUT 				; info during the running of this
+	LD	R0, NEW_LINE 		; just in case we need to output DEBUG 
+	OUT 					; info during the running of this
 
-	AND	R4, R4, #0		; R4 is counter
+	AND	R4, R4, #0			; R4 is counter
 	
-	LD	R1, RESET		;
-	NOT	R1, R1			; 
-	ADD	R1, R1, #1		; make inverted ASCII "0" to check against
+	LD	R1, RESET			;
+	NOT	R1, R1				; 
+	ADD	R1, R1, #1			; make inverted ASCII "0" to check against
 
 SOLVE_NEXT_VALUE	
-	ADD R3, R5, R4	; R5 is the board. Adding value of R4 increments it and loads to R0
+	ADD R3, R5, R4			; R5 is the board. Adding value of R4 increments it and loads to R0
 	LDR R0, R3, #0
 	
-	ADD	R0, R0, R1	; check for 0
-	BRz	SOLVE_ZERO
+	ADD	R0, R0, R1			; check for 0
+	BRz	FOUND_ZERO
 	
 	BRnp CONTINUE
 
@@ -296,8 +296,8 @@ CONTINUE
 	ADD	R4, R4, #1			; increment array counter
 
 	LD R0, column 			; upacks, increments, & repacks column count
-	ADD R0, R0, #1
-	ST R0, column
+	ADD R0, R0, #1 			;
+	ST R0, column 		
 
 	ADD	R0, R4, #-4			;
 	BRz	GOTO_NEXT_LINE		;
@@ -314,7 +314,7 @@ CONTINUE
 	BRnp	SOLVE_NEXT_VALUE
 
 	
-SOLVE_ZERO
+FOUND_ZERO
 	LD R0, zero_count		; unpacks, increments, & repacks zero counter
 	ADD R0, R0, #1
 	ST R0, zero_count
@@ -326,6 +326,9 @@ SOLVE_ZERO
 	; works
 	; ;lajsdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasdf;lkjasd
 	;*****************************************
+	JSR SOLVE_ZERO
+	LEA R0, name
+	PUTS
 
 	BRnzp CONTINUE
 
@@ -373,60 +376,94 @@ FINISH_SOLVE
 
 ;******** GO BACK TO CALLING JSR *******
 
-
-;-------------------------------------
-; *** SOLVE VARS *** 
-; Imporant "global-ish" Solving Variables
-; and Data. 
-; *** Use these in the other checks ***
-; ------------------------------------
-
 ;--- Constant
-RESET 		.FILL x30 
+RESET 		.FILL #0
 
 ;--- Variable
-column 		.FILL x30
-row 		.FILL x30
+column 		.FILL #0
+row 		.FILL #0
 zero_count	.FILL x30
 
 
 
-
 ;------------------------------------
-; **** SOLVE_SUDOKU *****
-; subroutine
-;------------------------------------
-SOLVE_SUDOKU	
-	STR R7, R6, #-1	; Save location of call on stack
-	ADD R6, R6, #-1	; 
+; ***** SOLVE_ZERO *****
+; 		Subroutine
+; - tries new values to replace 
+; the 0 found in the location specified
+; in the calling subroutine
+; 
+; Clobbers:
+; R0 = display register
+; R1 = tes_num loaded & incremented
+; R2 = 
+; R3 =  
+; R4 = 
+;  
+; NO TOUCHEEE 
+; R5 = loaded board
+; R6 = stack
+; R7 = PC counter thing 
+;------------------------------
 
-	AND R4, R4, #0  ;initialize the counter at 0
-SOLVE_LOOP
-	ADD R3, R5, R4	;Starts at location 0 of array
-	LDR	R0, R3, #0	;loads value at R3 into R0
-	BRZ SOLVE_LOCATION ;If R0 = 0 jump to Solve Location
-INCREMENT_LOCATION
-	ADD R4, R4, #1	 ;increments to next location if R0 > 0
-	ADD R2, R4, #-15 ;subtracts the 15 from the location. 
-					 ;if R2 == 0 you are done
-	BRN SOLVE_LOOP	 ;if not finished then jump to SOLVE_LOOP
+SOLVE_ZERO
+	STR R1, R6, #-1 ; saves R1
+	STR R3, R6, #-2 ; saves R3
+	STR R4, R6, #-3 ; saves R4
+	STR R7, R6, #-4	; Save location of call on stack
+	ADD R6, R6, #-4	; 
+
+
+TEST_NEW_VAL
+	LD R0, NEW_LINE
+	OUT
+	LEA R0, name
+	PUTS
+
+	LD R0, test_num
+	OUT
+
+FINISH_SOLVING_ZERO
+	LDR R7, R6, #0		; Reload location of call from stack
+	STR R4, R6, #1 		; reloads R4
+	STR R3, R6, #2 		; reloads R3
+	STR R1, R6, #3 		; reloads R1
+	ADD R6, R6, #4 		; 
+
+
+
+
+;;------------------------------------
+;; **** SOLVE_SUDOKU *****
+;; subroutine
+;;------------------------------------
+;SOLVE_SUDOKU	
+
+
+;	AND R4, R4, #0  ;initialize the counter at 0
+;SOLVE_LOOP
+;	ADD R3, R5, R4	;Starts at location 0 of array
+;	LDR	R0, R3, #0	;loads value at R3 into R0
+;	BRZ SOLVE_LOCATION ;If R0 = 0 jump to Solve Location
+;INCREMENT_LOCATION
+;	ADD R4, R4, #1	 ;increments to next location if R0 > 0
+;	ADD R2, R4, #-15 ;subtracts the 15 from the location. 
+;					 ;if R2 == 0 you are done
+;	BRN SOLVE_LOOP	 ;if not finished then jump to SOLVE_LOOP
 
 	
-	LDR	R7, R6, #0		; Load previous location
-	ADD	R6, R6, #1		; Restore Stack location
-	RET				; Return to calling location
-SOLVE_LOCATION
-	ADD R0, R0, #1	;increment value at R0 by 1
-	BRNZP ROW_CHECK	;start the checking starting with the row
-	BRNZP INCREMENT_LOCATION		;If it makes it through all checks jump to the looping cycle
-; Code
-;
-;
+;	LDR	R7, R6, #0		; Load previous location
+;	ADD	R6, R6, #1		; Restore Stack location
+;	RET				; Return to calling location
+;SOLVE_LOCATION
+;	ADD R0, R0, #1	;increment value at R0 by 1
+;	BRNZP ROW_CHECK	;start the checking starting with the row
+;	BRNZP INCREMENT_LOCATION		;If it makes it through all checks jump to the looping cycle
 
 ;---------------------------
 ; SOLVE_SUDOKU Variables
 ;---------------------------
-test_num	.FILL x30 
+test_num	.FILL x31 		; value of 1 to test first
 
 
 
@@ -435,11 +472,11 @@ test_num	.FILL x30
 ; Subroutine
 ; 
 ;--------------------------
-ROW_CHECK
+;ROW_CHECK
 
 
 
-BRP SOLVE_LOCATION
+;BRP SOLVE_LOCATION
 
 ;---------------------------
 ; ROW_CHECK Variables
@@ -455,10 +492,10 @@ BRP SOLVE_LOCATION
 ; Subroutine
 ; R2, R3
 ;--------------------------
-COLUMN_CHECK
+;COLUMN_CHECK
 
 
-BRP SOLVE_LOCATION
+;BRP SOLVE_LOCATION
 ;---------------------------
 ; COLUMN_CHECK Variables
 ;---------------------------
@@ -637,5 +674,10 @@ QUAD1 .FILL #0
 QUAD2 .FILL #2
 QUAD3 .FILL #8
 QUAD4 .FILL #10
+
+
+
+
+
 
 .END
