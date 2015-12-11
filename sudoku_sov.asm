@@ -452,12 +452,49 @@ TRY_NEW		.STRINGZ "Try a new value\n"
 
 
 ;--------------------------
-; ROW_CHECK
-; Subroutine
-; 
+; ***** ROW_CHECK *****
+; - tests the test_num against values
+; in the current row. Throws it back up
+; to TEST_NEW_VAL if it doesn't check out
+;
+; R0: temp for math
+; R1: Still holds inverted test_num
+; R2: 
+; R3: CURRENT BOARD LOCATION 
+; R4: incremented board
+; R5: Board
+; R6: Return Values
+; R7: Return Values
 ;--------------------------
 ROW_CHECK
-	LD R	
+	LD  R2, row
+	LD  R4, WIDTH
+	AND R0, R0, #0
+
+ROW_MULTIPLY 
+	ADD R0, R0, R4		; This will multiply 4 by whatever 
+	ADD R2, R2, #-1		; row we are on. That'll give us the
+	BRz ROW_TRY			; starting position for the check
+	BRnp ROW_MULTIPLY
+
+ROW_TRY
+	ADD R4, R0, #0		; Move the starting locaction into R4.
+	ADD R4, R4, R5 		; Gets to that element in array
+	LD  R2, WIDTH 		; sets Counter
+
+ROW_INCREMENT
+	LDR R4, R4, #0
+
+	ADD R0, R1, R4 
+	BRz  TEST_NEW_VAL
+
+	ADD R4, R4, #1
+	ADD R2, R2, #-1  	
+	BRz  GET_IT
+	BRnp ROW_INCREMENT
+
+GET_IT
+	BRnzp 	FINISH_SOLVING_ZERO
 
 
 ;BRP SOLVE_LOCATION
@@ -465,7 +502,7 @@ ROW_CHECK
 ;---------------------------
 ; ROW_CHECK Variables
 ;---------------------------
-
+WIDTH 	.FILL #4
 
 
 
@@ -544,7 +581,7 @@ BOX_4
 
 
 STEP_BOX
-;------- TOP_LEFT number-------------;
+;------- TOP_LEFT number----------------------
 	ADD R2, R2, #0	;0 + [first] = TL
 	ADD R4, R5, R2 	;R4 = (R5 + R2)	 R2 = start number
 	
@@ -552,7 +589,7 @@ STEP_BOX
 	ADD R0, R4, R1  		;R1 = R4 + R0 is equal?
 	BRz TEST_NEW_VAL 		; fail the number was found
 
-;--------- TOP RIGHT ------------;
+;--------- TOP RIGHT ------------------------
 	ADD R2, R2, #1 	;[first] + 1 = TR
 	ADD R4, R5, R2 	;Load the value into R3
 
@@ -560,7 +597,7 @@ STEP_BOX
 	ADD R0, R4, R1  		;R1 = R4 + R0 is equal?
 	BRz TEST_NEW_VAL 		; fail the number was found
 	
-;---------- Bottom Left -----------;
+;---------- Bottom Left ---------------------
 	ADD R2, R2, #3 ; [first] + 4 = BL
 	ADD R4, R5, R2 ; Load the value into R3
 
@@ -568,7 +605,7 @@ STEP_BOX
 	ADD R0, R4, R1
 	BRz TEST_NEW_VAL
 
-; --------- Bottom right ------------;
+; --------- Bottom right --------------------
 	ADD R2, R2, #1 ; [first] + 4 = BL
 	ADD R4, R5, R2 ; Load the value into R3
 
@@ -576,10 +613,7 @@ STEP_BOX
 	ADD R0, R4, R1
 	BRz TEST_NEW_VAL
 
-
-	BRnzp 	FINISH_SOLVING_ZERO
-
-
+;-----------------------------------
 
 QUAD1 .FILL #0
 QUAD2 .FILL #2
